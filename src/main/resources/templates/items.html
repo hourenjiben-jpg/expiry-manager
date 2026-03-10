@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8">
+        <title>消費期限管理 - Expiry Manager</title>
+        <meta name="description" content="登録したものをリスト化した物です">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <style>
+            :root {
+                --primary-color: #4a90e2;
+                --danger-color: #e74c3c;
+                --warning-color: #f39c12;
+                --success-color: #27ae60;
+                --light-bg: #f8f9fa;
+                --dark-bg: #1e1e1e;
+                --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                --transition: all 0.3s ease;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                transition: var(--transition);
+            }
+
+            /* ライトテーマ*/
+            .light-theme {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+            }
+
+            .light-theme .main-container {
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                padding: 30px;
+                margin-top: 20px;
+            }
+
+            /*　ダークテーマ */
+            .dark-theme {
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                min-height: 100vh;
+            }
+
+            .dark-theme .main-container {
+                background: #2c2c2c;
+                color: #f5f5f5;
+                border-radius: 15px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                padding: 30px;
+                margin-top: 20px;
+            }
+
+            .dark-theme table {
+                background-color: #3a3a3a;
+                color: #fff;
+            }
+
+            .dark-theme .table-striped tbody tr:nth-of-type(odd) {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+            .dark-theme .filter-bar {
+                background: #3a3a3a !important;
+                border: 1px solid #555;
+            }
+
+            .dark-theme .item-card {
+                background: #3a3a3a;
+                border-color: #555;
+            }
+
+            .dark-theme .form-control,
+            .dark-theme .form-select {
+                background-color: #3a3a3a;
+                color: #f5f5f5;
+                border-color: #555;
+            }
+
+            /* ナビゲーションバー */
+            .navbar {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+
+            .navbar-brand {
+                font-weight: bold;
+                font-size: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            /* ヘッダーコントロール */
+            .header-controls {
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+                align-items: center;
+                margin-bottom: 25px;
+            }
+
+            .search-box {
+                flex: 1;
+                min-width: 250px;
+                max-width: 400px;
+            }
+
+            /* フィルター・ソートバー */
+            .filter-bar {
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                padding: 25px;
+                border-radius: 12px;
+                margin-bottom: 25px;
+                box-shadow: var(--card-shadow);
+                transition: var(--trasition);
+            }
+
+            /* マウスカーソルをこのボタンの上に置いた時の文字設定 */
+            .filter-bar:hover {
+                transform: translateY(-2px); 
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            .filter-bar label {
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 8px;
+            }
+
+            .dark-theme .filter-bar label {
+                color: #ecf0f1;
+            }
+
+            /* ボタンスタイル */
+            .btn {
+                border-radius: 8px;
+                padding: 10px 20px;
+                font-weight: 500;
+                transition: var(--transition);
+                border: none;
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .btn-secondary {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+
+            .btn-success {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            }
+
+            .btn-danger {
+                background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            }
+
+            /*　テーブルスタイル */
+            .table {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--card-shadow);
+            }
+
+            .table thead {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+            .table thead th {
+                border: none;
+                padding: 15px;
+                font-weight: 600px;
+            }
+
+            .table tbody td {
+                padding: 15px;
+                vertical-align: middle;
+            }
+
+            /* 期限切れ・期限間近のスタイル　*/
+            .expired td {
+                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%) !important;
+                font-weight: 500;
+            }
+
+            .near-expiry td {
+                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+            }
+
+            .used-row td {
+                color: #95a5a6;
+                text-decoration: line-through;
+                opacity: 0.6;
+            }
+
+            /* カードレイアウト */
+            .item-card {
+                border: none;
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 20px;
+                background: white;
+                box-shadow: var(--card-shadow);
+                transition: var(--transition);
+            }
+
+            .item-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
+
+            .item-card h4 {
+                color: #2c3e50;
+                font-weight: 600;
+                margin-bottom: 15px;
+            }
+
+            .item-card.expired {
+                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            }
+
+            .item-card.near-expiry {
+                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            }
+
+            .item-card.used-row {
+                opacity: 0.5;
+                filter: grayscale(100%);
+            }
+
+            /* ページタイトル */
+            .page-title {
+                font-size: 2rem;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 25px;
+                display: flex;
+                align-items: center;
+                gap: 15px; 
+            }
+
+            .dark-theme .page-title {
+                color: #ecf0f1;
+            }
+
+            /* アイコンボタン付き　*/
+            .btn i {
+                margin-right: 5px;
+            }
+            
+            /* レスポンシブ対応　*/
+            @media (max-width: 768px) {
+                .header-controls {
+                    flex-direction: column;
+                }
+                
+                .search-box {
+                    width: 100%;
+                    max-width: 100%;
+                }
+
+                .filter-bar .col-md-6 {
+                    margin-bottom: 15px;
+                }
+
+                .page-title {
+                    font-size: 1.5rem;
+                }
+
+                /* アニメーション */
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                .main-container {
+                    animation: fadeIn 0.5s ease;
+                }
+
+                /* 統計バッジ */
+                .stats-badge {
+                    display: inline-block;
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    margin-right: 10px;
+                    margin-bottom: 10px;
+                }
+
+                .badge-danger {
+                    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+                    color: #c0392b;
+                }
+
+                .badge-warning {
+                    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                    color: #d68910;
+                }
+
+                .badge-info {
+                    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+                    color: #2980b9;
+                }
+            }
+
+        </style>
+    </head>
+
+    <body id="themeBody" class="light-theme">
+
+        <header class="mb-4">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">Expiry Manager</a>
+                </div>
+            </nav>
+
+            <div sec:authorize="isAuthenticated()">
+                <div class="text-end">
+                      <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="btn btn-outline-danger">ログアウト</button>
+                      </form>
+                    <p>ログイン中: <span sec:authentication="name">ユーザー名</span>さん</p>
+                </div>
+            </div>
+
+            <div class="container mt-3">
+                <div class="d-flex gap-2 flex-wrap">        
+                    <button class="btn btn-secondary mb-3" onclick="toggletheme()">
+                        テーマ切り替え
+                    </button>
+
+                    <button class="btn btn-outline-info"
+                            onclick="toggleView()"
+                            id="toggleBtn">
+                        カード表示に切り替え
+                    </button>
+                </div>
+
+                <!-- 検索フォーム -->
+                <form action="/items/search" 
+                      method="get"   
+                      class="mb-3 d-flex" 
+                      style="max-width: 300px;">
+                    <input type="text" name="keyword" 
+                           class="form-control me-2"
+                           placeholder="品名で検索"
+                           th:value="${keyword}">
+                    <button class="btn btn-outline-primary" type="submit">
+                        検索
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <main class="container">
+
+            <h1>登録リスト一覧</h1>
+            <a href="/items/add" class="btn btn-primary mb-3">新規追加</a>
+
+            <!-- フィルター・ソートバー -->
+            <div class="filter-bar">
+                <div class="row g-3">
+                    <!-- カテゴリーフィルター -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">カテゴリーで絞り込み:</label>
+                        <select class="form-select" onchange="filterByCategory(this.value)">
+                            <option value="all" th:selected="${currentCategory == null or currentCategory == 'all'}">すべて</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat}" 
+                                    th:text="${cat}"
+                                    th:selected="${currentCategory == cat}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- ソート機能 -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">並び替え:</label>
+                        <select class="form-select" onchange="sortItems(this.value)">
+                            <option value="expiry" th:selected="${currentSort == 'expiry' or currentSort == null}">期限順</option>
+                            <option value="name" th:selected="${currentSort == 'name'}">名前順</option>
+                            <option value="price-asc" th:selected="${currentSort == 'price-asc'}">価格順(安い順)</option>
+                            <option value="price-desc" th:selected="${currentSort == 'price-desc'}">価格順(高い順)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- カード表示 -->
+            <div class="container">
+                <div class="row" id="cardLayout" style="display:none;">
+                    <div class="col-12">
+                        <h2>カードビュー</h2>
+                    </div>
+
+                    <div class="col-md-4 mb-3" th:each="item : ${items}">
+                        <div class="item-card"
+                             th:classappend="${item.used} ? 'used-row' : (${expiredMap[item.id]} ? 'expired' : (${nearMap[item.id]} ? 'near-expiry' : ''))">
+                        
+                            <h4 th:text="${item.name}"></h4>
+                            <p><strong>カテゴリ:</strong> <span th:text="${item.category}"></span></p>
+                            <p><strong>期限:</strong> <span th:text="${#temporals.format(item.expiryDate, 'yyyy年MM月dd日')}"></span></p>
+                            <p><strong>価格:</strong> <span th:text="${item.price}"></span> 円</p>
+
+                            <div class="d-flex gap-2 mt-2">
+                                <form th:action="@{/items/used/{id}(id=${item.id})}" method="post">
+                                    <input type="checkbox" th:checked="${item.used}" onchange="this.form.submit()">
+                                </form>
+
+                                <a th:href="@{/items/edit/{id}(id=${item.id})}" class="btn btn-primary btn-sm">編集</a>
+
+                                <form th:action="@{/items/delete/{id}(id=${item.id})}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- テーブル表示 -->
+            <table id="tableLayout" class="table table-striped table-hover table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>品名</th>
+                        <th>カテゴリ</th>
+                        <th>期限</th>
+                        <th>価格</th>
+                        <th>完了</th>
+                        <th>編集</th>
+                        <th>削除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${items}" 
+                        th:classappend="${item.used} ? 'used-row' : (${expiredMap[item.id]} ? 'expired' : (${nearMap[item.id]} ? 'near-expiry' : ''))">
+                           
+                        <td th:text="${item.name}"></td>
+                        <td th:text="${item.category}"></td>
+                        <td th:text="${#temporals.format(item.expiryDate, 'yyyy年MM月dd日')}"></td>
+                        <td th:text="${item.price}"></td>
+                        <td>
+                            <form th:action="@{/items/used/{id}(id=${item.id})}" method="post">
+                                <input type="checkbox" th:checked="${item.used}" onchange="this.form.submit()">
+                            </form>
+                        </td>
+                        <td>
+                            <a th:href="@{/items/edit/{id}(id=${item.id})}" class="btn btn-primary btn-sm">編集</a>
+                        </td>
+                        <td>
+                            <form th:action="@{/items/delete/{id}(id=${item.id})}" method="post">
+                                <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+
+        <script>
+            function toggleView() {
+                const table = document.getElementById("tableLayout");
+                const cards = document.getElementById("cardLayout");
+                const btn = document.getElementById("toggleBtn");
+
+                if (table.style.display === "none") {
+                    table.style.display = "table";
+                    cards.style.display = "none";
+                    btn.innerText = "カード表示に切り替え";
+                } else {
+                    table.style.display = "none";
+                    cards.style.display = "flex";
+                    btn.innerText = "テーブル表示に戻す";
+                }
+            } 
+            
+            function toggletheme() {
+                const body = document.getElementById("themeBody");
+                body.classList.toggle("dark-theme");
+                body.classList.toggle("light-theme");
+            }
+
+            function sortItems(sortType) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('sort', sortType);
+                // カテゴリーフィルターを保持する
+                window.location.href = currentUrl.toString();
+            }
+
+            function filterByCategory(category) {
+                const currentUrl = new URL(window.location.href);
+                if (category === 'all') {
+                    currentUrl.searchParams.delete('category');
+                } else {
+                    currentUrl.searchParams.set('category', category);
+                }
+                // ソート設定は保持する
+                window.location.href = currentUrl.toString();
+            }
+        </script>
+    </body>
+</html>

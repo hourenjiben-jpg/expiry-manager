@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+    <html lang="ja">
+        <head>
+            <meta charset="UTF-8">
+            <title>リスト入力</title>
+            <meta name="description" content="入力フォーム">
+            <style>
+                label {
+                    display: block;
+                    margin-bottom: 10px;
+                }
+                input {
+                    width: 200px;
+                }
+            </style>
+        </head>
+
+        <body>
+            <h1>期限情報を入力してください</h1>
+            <form th:action="@{/items/add}" th:object="${item}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">品名</label>
+                    <input type="text" th:field="*{name}" class="form-control"
+                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>       
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">カテゴリ</label>
+                    <input type="text" th:field="*{category}" class="form-control"
+                           th:classappend="${#fields.hasErrors('category')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>       
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">期限</label>
+                    <input type="text" th:field="*{expiryDate}" class="form-control"
+                           th:classappend="${#fields.hasErrors('expiryDate')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>       
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">価格</label>
+                    <input type="text" th:field="*{price}" class="form-control"
+                           th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>       
+                </div>
+                
+            
+                <button type="submit">登録</button>
+            </form>
+        </body>
+
+
+    </html>
+

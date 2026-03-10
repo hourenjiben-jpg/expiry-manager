@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta cgarset="UTF-8">
+        <title>編集画面</title>
+        <Style>
+            label {
+                display: block;
+                margin-top: 10px;
+            }
+            input {
+                width: 200px;
+                padding: 5px;
+            }
+            button {
+                margin-top: 15px;
+                padding: 5px 15px;
+            }
+        </Style>
+    </head>
+
+    <body>
+        <h1>アイテム編集</h1>
+
+        <form th:action="@{/items/edit}" th:object="${item}" method="post">
+
+            <!-- ID は hidden で保持（重要）-->
+             <input type="hidden" th:field="*{id}" />
+
+             <div class="mb-3">
+                <label class="form-label">品名</label>
+                <input type="text" th:field="*{name}" class="form-control"
+                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>       
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">カテゴリ</label>
+                <input type="text" th:field="*{category}" class="form-control"
+                       th:classappend="${#fields.hasErrors('category')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>       
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">期限</label>
+                <input type="text" th:field="*{expiryDate}" class="form-control"
+                       th:classappend="${#fields.hasErrors('expiryDate')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>       
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">価格</label>
+                <input type="text" th:field="*{price}" class="form-control"
+                       th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>       
+            </div>
+             <br>
+             <button type="submit">保存</button>
+             </form>
+
+             <br>
+             <a href="/items">一覧に戻る</a>
+
+</body>
+</html>
