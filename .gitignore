@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Java / Maven の不要なファイルを除外
+target/
+*.class
+.mvn/
+mvnw
+mvnw.cmd
+
+# 開発ツールの設定ファイルを除外
+.settings/
+.project
+.classpath
+.factorypath
+.idea/
+*.iml
+.DS_Store
+**/.DS_Store
