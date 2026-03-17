@@ -4,12 +4,11 @@ WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# 2. 実行用
-FROM openjdk:17-jdk-slim
-# 実行時の作業場所を /app に固定する
+# 2. 実行用 (ここを修正しました)
+FROM eclipse-temurin:17-jre-slim
 WORKDIR /app
-# ビルドした場所から、今の作業場所にコピーする
+# ビルドステージから jar ファイルをコピー
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-# 同じ場所にある app.jar を実行する
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
