@@ -1,13 +1,12 @@
-# 1. 組み立て用の環境
+# 1. ビルド用
 FROM maven:3.8.5-openjdk-17 AS build
-WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
+COPY . /home/app
+RUN mvn -f /home/app/pom.xml clean package -DskipTests
 
-# 2. 実行用の環境
+# 2. 実行用
 FROM openjdk:17.0.1-jdk-slim
-WORKDIR /app
-# targetフォルダの中にある .jar ファイルを app.jar という名前でコピーする
-COPY --from=build /app/target/*.jar app.jar
+# ビルドで作られたjarファイルを確実にコピーする
+COPY --from=build /home/app/target/*.jar /usr/local/lib/app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+# フルパスで指定して実行する
+ENTRYPOINT ["java","-jar","/usr/local/lib/app.jar"]
