@@ -1,16 +1,17 @@
-# 1. ビルド用（Amazonが提供する安定したJava環境を使用）
-FROM amazoncorretto:17-al2023-jdk AS build
+# 1. 組み立て（ビルド）用の環境
+FROM maven:3.8.5-openjdk-17-slim AS build
 WORKDIR /app
 COPY . .
-# 実行権限を付与してビルド
-RUN chmod +x ./mvnw && ./mvnw clean package -DskipTests
+# 権限問題を避けるため、標準のmvnコマンドでビルド
+RUN mvn clean package -DskipTests
 
-# 2. 実行用
-FROM amazoncorretto:17-al2023-headless
+# 2. 実行用の環境
+FROM eclipse-temurin:17-jre-slim
 WORKDIR /app
-# targetフォルダ内のjarをapp.jarとしてコピー
+# 出来上がったjarファイルをapp.jarという名前でコピー
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
+# アプリを起動
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 

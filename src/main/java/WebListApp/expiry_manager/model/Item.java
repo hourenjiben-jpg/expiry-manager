@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 public class Item {
@@ -31,6 +33,13 @@ public class Item {
     private int price;
 
     private boolean used;
+    @NotNull(message = "通知のタイミングを選択して下さい")
+    @Min(value = 0, message = "0日以上を指定して下さい")
+    private Integer notificationDays;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Long getId() {
         return id;
@@ -78,6 +87,28 @@ public class Item {
 
     public void setUsed(boolean used) {
         this.used = used;
+    }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public enum NotificationSetting {
+        ON_DAY(0),
+        ONE_DAY_BEFORE(1),
+        THREE_DATS_BEFORE(3),
+        ONE_WEEK_BEFORE(7);
+
+        private final int days;
+        NotificationSetting(int days) { this.days = days; }
+        public int getDays() { return days; }
+    }
+
+    public Integer getNotificationDays() {
+        return notificationDays;
+    }
+
+    public void setNotificationDays(Integer notificationDays) {
+        this.notificationDays = notificationDays;
     }
 
 }

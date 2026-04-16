@@ -12,6 +12,8 @@ import WebListApp.expiry_manager.model.Item;
 import WebListApp.expiry_manager.Service.ItemService; // Serviceをインポート
 import org.springframework.validation.BindingResult;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
@@ -31,10 +33,14 @@ public class ItemController {
     public String listItems(
             @RequestParam(value = "sort", required = false, defaultValue = "expiry") String sort,
             @RequestParam(value = "category", required = false) String category,
-            Model model) {
+            Model model,
+            @AuthenticationPrincipal UserDetails userDetails) {
         
+        // ログインユーザー名を取得
+        String username = userDetails.getUsername();
+
         // Serviceにカテゴリ絞り込みを任せる
-        List<Item> items = itemService.findByCategory(category);
+        List<Item> items = itemService.findByCategoryAndUsername(category, username);
 
         // ソートロジック (ここにも本来はService内でDBソートするのが理想)
         sortItems(items, sort);
@@ -67,13 +73,22 @@ public class ItemController {
     }
 
     @PostMapping("/items/add")
-    public String addItem(@Valid @ModelAttribute Item item, BindingResult result, Model model) {
+    public String addItem(
+        @Valid @ModelAttribute Item item, 
+        BindingResult result, 
+        Model model, 
+        @AuthenticationPrincipal UserDetails userDetails) {
 
         if (result.hasErrors()) {
             return "item-form";
         }
 
-        itemService.save(item);
+        // 通知設定がからの場合デフォルトの３日で設定する
+        if(item.getNotificationDays() == null) {
+            item.setNotificationDays(3);
+        }
+
+        itemService.saveItem(item, userDetails.getUsername());
         return "redirect:/items";
     }
 

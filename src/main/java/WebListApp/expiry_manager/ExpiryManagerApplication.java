@@ -10,8 +10,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class ExpiryManagerApplication {
 
 	public static void main(String[] args) {
@@ -30,8 +32,6 @@ CommandLineRunner init(UserRepository userRepository, PasswordEncoder passwordEn
 
 			//　パスワードを「生」のまま入れず、暗号化（ハッシュ化）して保存
 			user.setPassword(passwordEncoder.encode("password"));
-
-			user.setrole("ROLE_USER");
 
 			userRepository.save(user);
 			System.out.println("⭐︎テストユーザーを作成しました: admin / password");

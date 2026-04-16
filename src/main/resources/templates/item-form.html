@@ -34,7 +34,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">期限</label>
-                    <input type="text" th:field="*{expiryDate}" class="form-control"
+                    <input type="date" th:field="*{expiryDate}" class="form-control"
                            th:classappend="${#fields.hasErrors('expiryDate')} ? 'is-invalid'">
                     <div class="invalid-feedback" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></div>       
                 </div>
@@ -47,6 +47,15 @@
                 </div>
                 
             
+                <div class="mb-3">
+                    <label class="form-label">通知タイミング</label>
+                    <select th:field="*{notificationDays}" class="form-control">
+                        <option value="0">当日</option>
+                        <option value="1">1日前</option>
+                        <option value="3">３日前</option>
+                        <option value="7">１週間前</option>
+                    </select>
+                </div>
                 <button type="submit">登録</button>
             </form>
         </body>
