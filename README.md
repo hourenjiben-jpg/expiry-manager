@@ -18,8 +18,9 @@
 ## 動作画面
 
 ### ログイン画面
-![ログイン画面](images/login.png)
-![ログイン画面２](images/login2.png)
+<img width="757" height="402" alt="スクリーンショット 2026-04-16 14 38 57" src="https://github.com/user-attachments/assets/b5980a91-0b21-42de-922b-c5f178e21b71" />
+<img width="779" height="359" alt="スクリーンショット 2026-04-16 14 38 43" src="https://github.com/user-attachments/assets/8f9b91f8-4837-48fc-b842-eb0108fda405" />
 
 ### メイン画面
-![メイン画面](images/main.png)
+<img width="1468" height="797" alt="スクリーンショット 2026-04-16 14 40 48" src="https://github.com/user-attachments/assets/60d6a3c6-7925-4b7d-80af-e492a0180387" />
+
