@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    // ユーザー名で検索するためのメソッド（Spring Data JPAが中身を自動生成してくれます）
+    // ユーザー名で検索するためのメソッド
     Optional<User> findByUsername(String username);
     
 }

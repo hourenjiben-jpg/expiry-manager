@@ -19,18 +19,16 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // すでにユーザーがいるか確認
         if (userRepository.count() == 0) {
-            // いなければ新ユーザー作成
             User admin = new User();
             admin.setUsername("admin");
-
-            //　パスワードをしっかりBCryptで暗号化
             admin.setPassword(passwordEncoder.encode("password"));
             admin.setRole("ROLE_USER");
 
             userRepository.save(admin);
-            System.out.println("初期ユーザーを作成しました: admin / password");
+        
+            // パスワードを生でログに出すのは開発環境のみの想定
+            System.out.println("[INFO] データベースが空のため、初期デモユーザー(admin)を作成しました。");
         }
     }
     

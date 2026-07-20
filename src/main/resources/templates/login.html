@@ -1,32 +1,179 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <title>ログイン画面</title>
-    </head>
-    <body>
-        <h2>ログイン</h2>
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン画面</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #27ae60;
+            --light-bg: #f8f9fa;
+            --dark-bg: #1e1e1e;
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
 
-        <div th:if="${param.register_success}" style="color: blue;">
-            登録が完了しました。ログインして下さい
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        /* ボタンスタイル */
+        .btn {
+            width: 100%;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* メッセージバッジ */
+        .alert-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #e8f8f5;
+            color: var(--success-color);
+            border: 1px solid #a3e4d7;
+        }
+
+        .alert-danger {
+            background-color: #fceae9;
+            color: var(--danger-color);
+            border: 1px solid #f5b7b1;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .footer-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2 class="page-title">ログイン</h2>
+
+        <!-- 各種通知メッセージ（重複を統合） -->
+        <div th:if="${param.register_success}" class="alert-message alert-success">
+            登録が完了しました。ログインしてください。
         </div>
 
-        <div th:if="${param.error}" style="color: red;">
-            ユーザー名またはパスワードが違います
+        <div th:if="${param.error}" class="alert-message alert-danger">
+            ユーザー名またはパスワードが違います。
         </div>
 
+        <div th:if="${param.logout}" class="alert-message alert-success" style="background-color: #ebf5fb; color: #2980b9; border-color: #a9cce3;">
+            ログアウトしました。
+        </div>
+
+        <!-- ログインフォーム -->
         <form th:action="@{/login}" method="post">
-            <div>
-                <label>ユーザー名: <input type="text" name="username"></label>
+            <div class="form-group">
+                <label for="username">ユーザー名</label>
+                <input type="text" id="username" name="username" class="form-control" required placeholder="ユーザー名を入力">
             </div>
-            <div>
-                <label>パスワード: <input type="password" name="password"></label>
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <input type="password" id="password" name="password" class="form-control" required placeholder="パスワードを入力">
             </div>
-            <button type="submit">ログイン</button>
+            <button type="submit" class="btn btn-primary">ログイン</button>
         </form>
 
-        <hr>
-        <p>アカウントをお持ちでないですか？</p>
-        <a th:href="@{/register}">新規ユーザー登録</a>
-    </body>
+        <div class="footer-links">
+            <p>アカウントをお持ちでないですか？</p>
+            <a th:href="@{/register}">新規ユーザー登録はこちら</a>
+        </div>
+    </div>
+
+</body>
 </html>

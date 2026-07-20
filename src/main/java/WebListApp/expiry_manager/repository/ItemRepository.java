@@ -1,31 +1,24 @@
-                package WebListApp.expiry_manager.repository;
+package WebListApp.expiry_manager.repository;
 
-                import org.springframework.data.jpa.repository.JpaRepository;  // こいつのおかげでCRUD操作を使えるようになる
-                import org.springframework.data.jpa.repository.Query;
-                import WebListApp.expiry_manager.model.Item;  // Entityクラスの Itemをインポート
-                import java.util.List;
-                import java.time.LocalDate;
+import WebListApp.expiry_manager.model.Item;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
 
-                public interface ItemRepository extends JpaRepository<Item, Long> {
-                    // 全てのカテゴリーを取得
-                    @Query("SELECT DISTINCT i.category FROM Item i WHERE i.category IS NOT NULL ORDER BY i.category")
-                    List<String> findAllDistinctCategories();
+public interface ItemRepository extends JpaRepository<Item, Long> {
 
-                    // カテゴリーでフィルター
-                    List<Item> findByNameContainingIgnoreCase(String keyword);
+    // ユーザー専用の全件取得
+    List<Item> findByUserUsername(String username, Sort sort);
 
-                    List<Item> findByCategory(String category);
+    // カテゴリとユーザーでの絞り込み取得
+    List<Item> findByCategoryAndUserUsername(String category, String username, Sort sort);
 
-                    List<Item> findByNotificationDaysAndExpiryDate(int notificationDays, LocalDate expiryDate);
+    // キーワード検索（前回直したもの）
+    List<Item> findByNameContainingIgnoreCaseAndUserUsername(String keyword, String username, Sort sort);
 
-                    List<Item> findByUserUsername(String username);
-
-                    List<Item> findByCategoryAndUserUsername(String category, String username);
-                    
-                }
-                // ItemRepositoryはjavaのオブジェクト指向の世界とデータベースのSQLの世界を結びつける重要な橋渡し役を果たす
-                // CRUD操作（データの作成・読み取り・更新・削除）を専門におこうなう
-                // JpaRepository<Item, Long>を継承するだけで更新・検索・全権取得・削除という基本的な機能を実装してくれる
-
-
-
+    // 重複のないカテゴリー一覧を取得（Serviceの44行目で使用）
+    @Query("SELECT DISTINCT i.category FROM Item i WHERE i.user.username = :username")
+    List<String> findAllDistinctCategoriesByUsername(@Param("username") String username);
+}

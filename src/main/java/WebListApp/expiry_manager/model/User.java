@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "users") // SQLの予約後を避けるためテーブル名を指定
+@Table(name = "users") 
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +25,8 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // "ROLE_USER"などの権限をSpring Securityが理解できる形に変換
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override 

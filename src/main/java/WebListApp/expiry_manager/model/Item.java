@@ -20,7 +20,7 @@ public class Item {
     private Long id;
 
     @NotBlank(message = "品名を入力して下さい")
-    @Size(max = 50, message = "品名は５０文字で入力して下さい")
+    @Size(max = 50, message = "品名は５０文字以内で入力して下さい")
     private String name;
 
     @NotBlank(message = "カテゴリを選択して下さい")
@@ -33,13 +33,12 @@ public class Item {
     private int price;
 
     private boolean used;
-    @NotNull(message = "通知のタイミングを選択して下さい")
-    @Min(value = 0, message = "0日以上を指定して下さい")
-    private Integer notificationDays;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    // Getter/Setter
 
     public Long getId() {
         return id;
@@ -90,25 +89,7 @@ public class Item {
     }
 
     public User getUser() { return user; }
+
     public void setUser(User user) { this.user = user; }
-
-    public enum NotificationSetting {
-        ON_DAY(0),
-        ONE_DAY_BEFORE(1),
-        THREE_DATS_BEFORE(3),
-        ONE_WEEK_BEFORE(7);
-
-        private final int days;
-        NotificationSetting(int days) { this.days = days; }
-        public int getDays() { return days; }
-    }
-
-    public Integer getNotificationDays() {
-        return notificationDays;
-    }
-
-    public void setNotificationDays(Integer notificationDays) {
-        this.notificationDays = notificationDays;
-    }
 
 }
