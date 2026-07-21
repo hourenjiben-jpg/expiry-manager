@@ -13,19 +13,26 @@ import org.springframework.validation.BindingResult;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.List;
 
+/**
+ * 【機器・アイテム管理コントローラー】
+ * ブラウザからのWebリクエスト（GET/POST）を受け取り、
+ * ItemService を呼び出してビジネスロジックを実行後、表示するHTML（ビュー）を決定します。
+ */
 @Controller
 public class ItemController {
     
-    // Repositoryは直接呼ばず、すべての窓口をServiceに一本化します
+    // コントローラーが直接リポジトリを触らず、ビジネスロジックはすべて Service に委任する
     private final ItemService itemService;
 
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
 
+    /**
+     * 一覧画面表示（並び替え・カテゴリ絞り込み対応）
+     */
     @GetMapping("/items")
     public String listItems(
             @RequestParam(value = "sort", required = false, defaultValue = "expiry") String sort,
@@ -35,16 +42,16 @@ public class ItemController {
         
         String username = userDetails.getUsername();
 
-        // データの取得、絞り込み、並び替えまですべてService側（DB側）で完結させて綺麗に受け取る
+        // ログインユーザー専用のデータ一覧を取得
         List<Item> items = itemService.findItems(username, category, sort);
         model.addAttribute("items", items);
 
-        // 期限判定マップ
+        // 期限切れ・期限間近の判定マップを計算して画面へ渡す
         var statusMaps = itemService.getExpiryStatusMaps(items);
         model.addAttribute("expiredMap", statusMaps.get("expired"));
         model.addAttribute("nearMap", statusMaps.get("near"));
         
-        // カテゴリ一覧も「そのユーザーが登録したものだけ」をService経由で取得
+        // ログインユーザーが使用しているカテゴリ一覧（ドロップダウン用）を取得
         model.addAttribute("categories", itemService.findDistinctCategoriesByUsername(username));
         model.addAttribute("currentSort", sort);
         model.addAttribute("currentCategory", category);
@@ -52,12 +59,18 @@ public class ItemController {
         return "items";
     }
 
+    /**
+     * 新規登録画面の表示
+     */
     @GetMapping("/items/add")
     public String showAddForm(Model model) {
         model.addAttribute("item", new Item());
         return "item-form";
     }
 
+    /**
+     * 新規登録処理（バリデーション＋ユーザー紐付け保存）
+     */
     @PostMapping("/items/add")
     public String addItem(
         @Valid @ModelAttribute Item item, 
@@ -65,25 +78,32 @@ public class ItemController {
         Model model, 
         @AuthenticationPrincipal UserDetails userDetails) {
 
+            // 入力チェックエラー（@NotBlankや@NotNullの違反）がある場合はフォームへ押し戻す
         if (result.hasErrors()) {
             return "item-form";
         }
 
+        // ログインユーザー名を渡して安全に保存
         itemService.saveItem(item, userDetails.getUsername());
-        return "redirect:/items";
+        return "redirect:/items"; // 二重送信防止のためにリダイレクト
     }
 
-    // セキュリティ対策：IDだけでなく、必ず「誰のデータか」をServiceに渡して検証する
+    /**
+     * 使用済み/未使用 トグル状態の切り替え処理
+     */
     @PostMapping("/items/used/{id}")
     public String checkUsed(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        // Service側で「自分のデータであれば状態を反転する」ロジックを徹底
+        // IDだけでなくユーザー名も渡し、他人のデータを勝手に更新できないよう防衛
         itemService.toggleUsedStatus(id, userDetails.getUsername());
         return "redirect:/items";
     }
 
+    /**
+     * 編集画面の表示
+     */
     @GetMapping("/items/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        // 他人の編集画面を覗き見されないように防御
+        // 他人のデータIDを直入力された場合の不正アクセスを判定・防御
         Item item = itemService.findByIdAndUsername(id, userDetails.getUsername());
         if (item == null) {
             return "redirect:/items"; // 存在しない、または他人のデータなら一覧へ戻す
@@ -92,6 +112,9 @@ public class ItemController {
         return "item-edit";
     }
 
+    /**
+     * 更新処理
+     */
     @PostMapping("/items/edit")
     public String updateItem(
             @Valid @ModelAttribute Item item, 
@@ -102,18 +125,24 @@ public class ItemController {
             return "item-edit";
         }
         
-        // 保存する際も、乗っ取りを防ぐためにログインユーザー名で防衛線
+        // 保存時もログインユーザー名で所有権を厳しく検証
         itemService.updateItem(item, userDetails.getUsername());
         return "redirect:/items";
     }
 
+    /**
+     * 削除処理
+     */
     @PostMapping("/items/delete/{id}")
     public String deleteItem(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        // 安全に削除を実行
+       // 所有者チェックを行った上で安全に削除
         itemService.deleteItem(id, userDetails.getUsername());
         return "redirect:/items";
     }
 
+    /**
+     * あいまいキーワード検索処理
+     */
     @GetMapping("/items/search")
     public String searchItems(
             @RequestParam(value = "keyword", required = false) String keyword, 
@@ -134,12 +163,5 @@ public class ItemController {
         model.addAttribute("categories", itemService.findDistinctCategoriesByUsername(username));
         
         return "items";
-    }
-
-    @GetMapping("/message")
-    public String showMessage(Model model) {
-        model.addAttribute("message", "ようこそ消費期限リストへ");
-        model.addAttribute("title", "消費期限リスト");
-        return "message";
     }
 }

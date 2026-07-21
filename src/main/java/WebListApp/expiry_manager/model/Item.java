@@ -15,25 +15,32 @@ import jakarta.persistence.JoinColumn;
 @Entity
 public class Item {
 
+    // 1. 主キー（プライマリキー）と自動採番の設定
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // IDをデータベース側で自動連番（Auto Increment）させる設定
     private Long id;
 
     @NotBlank(message = "品名を入力して下さい")
     @Size(max = 50, message = "品名は５０文字以内で入力して下さい")
+    // 品名
     private String name;
 
     @NotBlank(message = "カテゴリを選択して下さい")
+    //　カテゴリ
     private String category;
 
     @NotNull(message = "期限を入力して下さい")
+    // 消費期限
     private LocalDate expiryDate;
 
     @Min(value = 0, message = "価格は０円以上にして下さい")
+    // 価格
     private int price;
 
+    // 使用済み（真偽値）：true (使用済) / false (未使用)
     private boolean used;
 
+    // 多対1のリレーション設定：「複数のItem（機器）」が「1人のUser（所有者/登録者）」に紐づく
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

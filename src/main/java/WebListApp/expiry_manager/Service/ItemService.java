@@ -13,6 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 【機器・アイテム管理 サービス層】
+ * DB操作（Repository）と画面（Controller）の中間に位置し、
+ * データ取得・ソート解析・所有者チェック付きのCUD操作・期限判定などの「ビジネスロジック」を一身に担います。
+ */
 @Service
 @Transactional // データの追加・更新・削除を行うため、クラス全体、または各メソッドにトランザクションを付与します
 public class ItemService {
@@ -25,28 +30,35 @@ public class ItemService {
     }
 
     // 1. データ取得・絞り込み・ソート
-    // 条件（カテゴリ、ソート）に合わせて、ログインユーザーのアイテム一覧を取得
+
+    /**
+     * 条件（カテゴリ、ソートキー）に合わせて、ログインユーザー専用のアイテム一覧を取得します。
+     */
     @Transactional(readOnly = true)
     public List<Item> findItems(String username, String category, String sortKey) {
-        // 1. 画面からのソートキーを、Spring Data JPAのSortオブジェクトに変換
+        //  画面からのソートキーを、Spring Data JPAのSortオブジェクトに変換
         Sort sort = resolveSort(sortKey);
 
-        // 2. カテゴリ指定がない、または「all」の場合は全件取得（ユーザー限定）
+        //  カテゴリ指定がない、または「all」の場合は全件取得（ユーザー限定）
         if (category == null || category.isEmpty() || "all".equals(category)) {
             return itemRepository.findByUserUsername(username, sort);
         }
         
-        // 3. カテゴリが指定されている場合は、カテゴリとユーザーで絞り込んで取得
+        // カテゴリが指定されている場合は、カテゴリとユーザーで絞り込んで取得
         return itemRepository.findByCategoryAndUserUsername(category, username, sort);
     }
 
-    // ユーザーが登録した重複のないカテゴリー一覧を取得
+    /**
+     * ユーザーが登録した重複のないカテゴリー一覧を取得します（ドロップダウン用）。
+     */
     @Transactional(readOnly = true)
     public List<String> findDistinctCategoriesByUsername(String username) {
         return itemRepository.findAllDistinctCategoriesByUsername(username);
     }
 
-    // ユーザー専用のキーワード検索
+    /**
+     * ユーザー専用のあいまいキーワード検索を行います。
+     */
     @Transactional(readOnly = true)
     public List<Item> searchItemsByKeywordAndUsername(String keyword, String username) {
         Sort sort = Sort.by(Sort.Direction.ASC, "expiryDate"); // 検索時もデフォルトは期限順
@@ -57,7 +69,9 @@ public class ItemService {
     }
 
     // 2. セキュリティ担保付きのCUD操作（登録・更新・削除）
-    // 新規登録
+    /**
+     * 新規アイテムをログインユーザーに紐付けて保存します。
+     */
     public void saveItem(Item item, String username) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found: " + username));
@@ -67,7 +81,9 @@ public class ItemService {
         itemRepository.save(item);
     }
 
-    // 編集画面用：指定されたIDが「本当に自分のデータか」を確認して取得
+    /**
+     * 編集画面用：指定されたIDが「本当にログインユーザーのデータか」を検証して取得します。
+     */
     @Transactional(readOnly = true)
     public Item findByIdAndUsername(Long id, String username) {
         Item item = itemRepository.findById(id).orElse(null);
@@ -77,7 +93,9 @@ public class ItemService {
         return null; // 他人のデータ、または存在しない場合はnullを返してコントローラー側でリダイレクトさせる
     }
 
-    // 既存データの更新（所有者チェック付き）
+    /**
+     * 既存データの更新（所有者チェック＆ユーザー情報の再セット付き）
+     */
     public void updateItem(Item updatedItem, String username) {
         Item existingItem = itemRepository.findById(updatedItem.getId()).orElse(null);
         
@@ -89,7 +107,9 @@ public class ItemService {
         }
     }
 
-    // 使用済み（used）の切り替え（所有者チェック付き）
+    /**
+     * 使用済み（used）フラグの反転切り替え（所有者チェック付き）
+     */
     public void toggleUsedStatus(Long id, String username) {
         Item item = itemRepository.findById(id).orElse(null);
         if (item != null && item.getUser().getUsername().equals(username)) {
@@ -98,7 +118,9 @@ public class ItemService {
         }
     }
 
-    // 削除（所有者チェック付き）
+    /**
+     * アイテムの削除（所有者チェック付き）
+     */
     public void deleteItem(Long id, String username) {
         Item item = itemRepository.findById(id).orElse(null);
         if (item != null && item.getUser().getUsername().equals(username)) {
@@ -107,6 +129,11 @@ public class ItemService {
     }
 
     // 3. ビジネスロジック（期限判定）
+
+    /**
+     * 各アイテムに対して「期限切れ（expired）」および「期限間近（near：3日以内）」を判定し、
+     * IDをキーにした判定結果のマップを作成して返します。
+     */
     @Transactional(readOnly = true)
     public Map<String, Map<Long, Boolean>> getExpiryStatusMaps(List<Item> items) {
         Map<Long, Boolean> expiredMap = new HashMap<>();
@@ -115,8 +142,10 @@ public class ItemService {
 
         for (Item i : items) {
             LocalDate date = i.getExpiryDate();
-            // ItemService内の期限判定ロジック（Java側で判定しているため、SQLでの絞り込みは不要）
-            boolean isExpired = (date != null && (date.isBefore(now) || date.isEqual(now)));
+
+            // 当日以前（今日を含む）なら期限切れ判定
+            boolean isExpired = (date != null && (date.isBefore(now)));
+            // 期限切れではなく、かつ4日未満（今日から3日以内）なら期限間近判定
             boolean isNear = (date != null && !isExpired && date.isBefore(now.plusDays(4)));
 
             expiredMap.put(i.getId(), isExpired);
@@ -129,7 +158,12 @@ public class ItemService {
         return result;
     }
 
-    // 4. ヘルパーメソッド（ソート文字列の解析）
+    // 4. ヘルパーメソッド（内部補助処理）
+
+    /**
+     * 画面からのソートキー文字列（例: "price-asc"）を解析し、
+     * Spring Data JPA が理解できる Sort オブジェクトを作成します。
+     */
     private Sort resolveSort(String sortKey) {
         if ("name".equals(sortKey)) {
             return Sort.by(Sort.Direction.ASC, "name");

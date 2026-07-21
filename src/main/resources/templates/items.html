@@ -33,7 +33,44 @@
                 --border-color: #334155;
                 --primary: #6366f1;
                 --primary-hover: #4f46e5;
-            }
+
+                /* 1. 画面全体の背景色と文字色を変数に紐付け */
+    background-color: var(--bg-default);
+    color: var(--text-main);
+}
+
+/* 2. 暗くなりやすいカード、テーブル、フォーム類に文字色と背景色を適用 */
+.dark-theme .card,
+.dark-theme table,
+.dark-theme th,
+.dark-theme td {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+/* 3. 【重要】文字が黒くなりやすい入力フォーム（input/select/textarea）の対応 */
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea,
+.dark-theme .form-control,
+.dark-theme .form-select {
+    background-color: var(--bg-card);
+    color: var(--text-main);           /* ★入力した文字を明るい色に */
+    border-color: var(--border-color);
+}
+
+/* フォームのプレースホルダー（うっすら表示される案内文字）の色 */
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* 補足用・薄い文字（.text-muted などのクラスを使っている場合） */
+.dark-theme .text-muted,
+.dark-theme .secondary-text {
+    color: var(--text-muted) !important;
+}
 
             body {
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;

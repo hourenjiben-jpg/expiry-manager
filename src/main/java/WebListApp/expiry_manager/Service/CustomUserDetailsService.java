@@ -8,6 +8,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * 【Spring Security 専用 ユーザー詳細取得サービス】
+ * UserDetailsService インターフェースを実装し、
+ * ログイン時に Spring Security が DB からユーザー情報を安全に読み出すための bridge（架け橋）となります。
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -17,9 +22,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * ログイン画面で入力された username をもとに DB を検索し、
+     * Spring Security が理解できる UserDetails オブジェクトを作成して返します。
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // 1. DBからユーザーを取得
+        // 存在しない場合は、Spring Security 専用の UsernameNotFoundException 例外を投げて認証失敗にする
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
