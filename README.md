@@ -4,8 +4,9 @@
 
 
   画面イメージ
-<img width="1459" height="791" alt="スクリーンショット 2026-07-21 14 31 22" src="https://github.com/user-attachments/assets/2ec230d4-2775-4294-86c7-943fb2fef957" />
 <img width="1467" height="797" alt="スクリーンショット 2026-07-21 14 27 22" src="https://github.com/user-attachments/assets/13e8ce07-8f4c-42c8-b2fa-67b3d9b0e69e" />
+<img width="1459" height="791" alt="スクリーンショット 2026-07-21 14 31 22" src="https://github.com/user-attachments/assets/2ec230d4-2775-4294-86c7-943fb2fef957" />
+
 
 
 ・　開発の背景と目的
