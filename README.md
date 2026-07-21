@@ -1,9 +1,11 @@
+
 消費期限管理アプリ (Expiry Manager)
 
 家庭や飲食店・店舗等における食品や消耗品の「消費期限・賞味期限」を一元管理し、期限切れによる廃棄ロス（フードロス）を未然に防ぐWebアプリケーションです。
 
 ・ 画面イメージ
-
+[タイトル画面]<img width="1467" height="797" alt="スクリーンショット 2026-07-21 14 27 22" src="https://github.com/user-attachments/assets/efe5df55-df00-432f-917f-f7ad2d1bd578" />
+[メイン画面]<img width="1459" height="791" alt="スクリーンショット 2026-07-21 14 31 22" src="https://github.com/user-attachments/assets/eb759689-8fa5-4926-865f-229b4d976d8a" />
 
 
 ・ 開発の背景と目的
